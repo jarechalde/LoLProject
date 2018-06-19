@@ -3,7 +3,7 @@
 #Some Libraries that we are going to need
 library(jsonlite)
 
-key = 'RGAPI-f165ab9a-cab1-4a32-859b-3df7c20e370d'
+key = 'RGAPI-ad126964-86f9-4815-97c8-dfc67d7f9ff2'
 urlol = 'https://na1.api.riotgames.com/lol/summoner/v3/summoners/by-name/jarechalde?api_key='
 
 #RGAPI-f165ab9a-cab1-4a32-859b-3df7c20e370d
@@ -11,9 +11,7 @@ urlol = 'https://na1.api.riotgames.com/lol/summoner/v3/summoners/by-name/jarecha
 urlol = paste(urlol,key,sep = '')
 
 #GEtting all the champions information
-championsurl = 'https://na1.api.riotgames.com/lol/static-data/v3/champions?locale=en_US&dataById=false&api_key=RGAPI-f165ab9a-cab1-4a32-859b-3df7c20e370d'
-championsurl = 'https://na1.api.riotgames.com/lol/static-data/v3/champions?locale=en_US&dataById=true&api_key=RGAPI-f165ab9a-cab1-4a32-859b-3df7c20e370d'
-#championsurl = 'https://na1.api.riotgames.com/lol/static-data/v3/champions/{id}?locale=en_US&api_key=RGAPI-f165ab9a-cab1-4a32-859b-3df7c20e370d'
+championsurl = 'https://na1.api.riotgames.com/lol/static-data/v3/champions?locale=en_US&dataById=true&api_key=RGAPI-ad126964-86f9-4815-97c8-dfc67d7f9ff2'
 championsdata = readLines(championsurl)
 championsdata = fromJSON(championsdata)
 
@@ -45,7 +43,7 @@ matchdata = readLines(matchurl)
 matchdata = fromJSON(matchdata)
 
 gameids = matchdata$matches$gameId
-gameids = gameids[1:1]
+#gameids = gameids[1:1]
 
 durations = c()
 resultarray = c()
@@ -55,8 +53,7 @@ for (i in 1:length(gameids)){
   print(gameids[i])
   
   gameurl = 'https://na1.api.riotgames.com/lol/match/v3/matches/'
-  key = '?api_key=RGAPI-f165ab9a-cab1-4a32-859b-3df7c20e370d'
-  gameurl = paste(gameurl,as.character(gameids[i]), key, sep = '')
+  gameurl = paste(gameurl,as.character(gameids[i]),'?api_key=',key, sep = '')
   
   gamedata = readLines(gameurl)
   gamedata = fromJSON(gamedata)
@@ -64,9 +61,11 @@ for (i in 1:length(gameids)){
   #Extracting data
   participants = gamedata$participants
   team = gamedata$teams
+  champid = gamedata$participants$championId[1]
+  playermatchid = gamedata$participantIdentities$participantId[gamedata$participantIdentities$player$accountId == apidata$accountId]
   
   #Getting if we won or lost
-  teamIDPlayer = participants$teamId[participants$participantId == 1]
+  teamIDPlayer = participants$teamId[participants$participantId == playermatchid]
   winloss = team$win[team$teamId == teamIDPlayer]
   
   duration = gamedata$gameDuration/60
@@ -74,7 +73,7 @@ for (i in 1:length(gameids)){
   #Storing data in arrays
   durations = c(durations,duration)
   resultarray = c(resultarray,winloss)
-  champplayed = c(champplayed, champdataframe[champdataframe$champids == champID])
+  champplayed = c(champplayed, as.character(champdataframe$champnames[champdataframe$champids == champid]))
   
   Sys.sleep(1)
 }
